@@ -38,7 +38,8 @@ conjacp <- function(formula,
                     adjust        = FALSE,
                     id            = NULL,
                     level_weights = NULL,
-                    condition     = NULL
+                    condition     = NULL,
+                    subset        = NULL
 ) {
   
   
@@ -51,14 +52,19 @@ conjacp <- function(formula,
   data_for_estimation <- conjacp.prepdata(formula       = formula,
                                           data          = data,         
                                           tasks         = tasks,
+                                          subgroups     = subgroups,
                                           id            = id,
-                                          level_weights = level_weights,
-                                          condition     = condition)
+                                          level_weights = level_weights)
   
   
   ### Estimate quantities of interest
-  out <- conjacp.estimation(data_for_estimation, adjust = adjust)
-  
+  out <- conjacp.estimation(data      = data_for_estimation,
+                            estimand  = estimand,
+                            by        = by,
+                            adjust    = adjust,
+                            condition = condition,
+                            subset    = subset)
+
   
   ### Output
   return(out)
@@ -1443,7 +1449,7 @@ conjacp.diff <- function(conjacp.object,
   if (cacp == "conditional") {
     estimates <- conjacp.object$estimates
     vcov      <- conjacp.object$vcov
-  } else if (cacp == "all_comparable") {
+  } else if (cacp == "comparable_pairs") {
     estimates <- conjacp.object$estimates_alt
     vcov      <- conjacp.object$vcov_alt
   }
