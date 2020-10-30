@@ -4,8 +4,8 @@
 
 The current draft of the paper is available on [SocArXiv](https://osf.io/preprints/socarxiv/e638u/).
 
-This repository contains the replication materials for this paper; specifically:
+This repository contains the following replication materials:
 * the R function used to estimate ACPs, differences in ACPs, and direct pairwise preferences, along with its documentation;
-* the R code that replicates the analyses of the immigrant experiment (Hainmueller and Hopkins 2014; Hainmueller, Hopkins, and Yamamoto 2015). The data are available on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR);
-* the R code that replicates supplemental information A's imaginary example;
-* the R code that replicates supplemnetal information D's Monte Carlo simulations.
+* the R code that replicates my partial replication of Hainmueller and Hopkins's immigrant experiment. The data are available on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR);
+* the R code that replicates the imaginary example presented in the supplemental information A;
+* the R code that replicates the Monte Carlo simulations presented in the supplemnetal information D.
