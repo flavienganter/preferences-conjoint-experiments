@@ -58,12 +58,12 @@ conjacp <- function(formula,
   
   
   ### Estimate quantities of interest
-  out <- conjacp.estimation(data      = data_for_estimation,
-                            estimand  = estimand,
-                            by        = by,
-                            adjust    = adjust,
-                            condition = condition,
-                            subset    = subset)
+  out <- conjacp.estimation(conjacp.prepdata.object  = data_for_estimation,
+                            estimand                 = estimand,
+                            by                       = by,
+                            adjust                   = adjust,
+                            condition                = condition,
+                            subset                   = subset)
 
   
   ### Output
