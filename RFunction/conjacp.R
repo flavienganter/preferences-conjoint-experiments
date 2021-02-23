@@ -3,7 +3,7 @@
 # conjoint experiments
 # v8
 # Flavien Ganter
-# Created on July 28, 2019; last modified on August 12, 2020
+# Created on July 28, 2019; last modified on February 11, 2021
 
 # This file creates seven functions:
 ## 1. conjacp - A general function for calculating ACPs, DACPs, and direct 
@@ -1087,10 +1087,15 @@ conjacp.estimation <- function(conjacp.prepdata.object,
     # Indices for subsets of estimates - original
     if (length(attr_unrestricted) > 0) {
       indices_acp          <- which(substr(names_acp, nchar(names_acp)-3, nchar(names_acp)-1) != "..c")
+    } else {
+      indices_acp          <- NULL
     }
     if (length(attr_restricted) > 0) {
       indices_cacp1        <- which(substr(names_acp, nchar(names_acp)-3, nchar(names_acp)) == "..c1")
       indices_cacp2        <- which(substr(names_acp, nchar(names_acp)-3, nchar(names_acp)) == "..c2")
+    } else {
+      indices_cacp1        <- NULL
+      indices_cacp2        <- NULL
     }
     
     # Point estimates
@@ -1124,6 +1129,9 @@ conjacp.estimation <- function(conjacp.prepdata.object,
                                                 indices = indices_cacp_byattr_temp[
                                                   indices_cacp_byattr_temp %in% indices_cacp])
       }
+    } else {
+      indices_cacp        <- NULL
+      indices_cacp_byattr <- NULL
     }
     
   # P
@@ -1135,10 +1143,15 @@ conjacp.estimation <- function(conjacp.prepdata.object,
     # Indices for subsets of estimates - original
     if (length(attr_unrestricted) > 0) {
       indices_acp          <- which(substr(names_p, nchar(names_p)-3, nchar(names_p)-1) != "..c")
+    } else {
+      indices_acp          <- NULL
     }
     if (length(attr_restricted) > 0) {
       indices_cacp1        <- which(substr(names_p, nchar(names_p)-3, nchar(names_p)) == "..c1")
       indices_cacp2        <- which(substr(names_p, nchar(names_p)-3, nchar(names_p)) == "..c2")
+    } else {
+      indices_cacp1        <- NULL
+      indices_cacp2        <- NULL
     }
     
     # Point estimates
@@ -1171,6 +1184,9 @@ conjacp.estimation <- function(conjacp.prepdata.object,
                                                 indices = indices_cacp_byattr_temp[
                                                   indices_cacp_byattr_temp %in% indices_cacp])
       }
+    } else {
+      indices_cacp        <- NULL
+      indices_cacp_byattr <- NULL
     }
     
   }
