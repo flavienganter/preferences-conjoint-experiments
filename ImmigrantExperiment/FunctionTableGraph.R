@@ -145,7 +145,7 @@ table.graph <- function(data,
                           order = 1:50)
   out_table <- merge(out_table, order_mod, by = "modality")
   out_table_var <- data.frame(modality = c("Gender:", " ",
-                                           "Job Experience", "  ",
+                                           "Job Experience:", "  ",
                                            "Job Plans:", "   ",
                                            "Prior Trips to the U.S.:", "    ",
                                            "Language Skills:", "     ",
