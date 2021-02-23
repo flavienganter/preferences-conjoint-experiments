@@ -1,7 +1,7 @@
 # Replicate the analyses of the immigrant experiment (Hainmueller, Hopkins and Yamamoto 2014, and
-# Hanmueller and Hopkins 2015) using the ACP framework (Ganter 2020)
+# Hanmueller and Hopkins 2015) using the ACP framework (Ganter 2021)
 # Author: Flavien Ganter
-# Created on December 29, 2019; last modified on October 30, 2020
+# Created on December 29, 2019; last modified on February 23, 2020
 
 
 
@@ -20,6 +20,7 @@ library(ggplot2)
 library(haven)
 library(sjlabelled)
 library(xlsx)
+library(patchwork)
 source("../RFunction/conjacp.R")
 source("FunctionTableGraph.R")
 source("FunctionVCOVCluster.R")
@@ -27,7 +28,7 @@ source("FunctionVCOVCluster.R")
 
 ## Graph theme add-on
 extrafont::loadfonts()
-source("theme_donors.R")
+source("theme_graph.R")
 cbPalette <- c("#E69F00", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#56B4E9", "#F0E442")
 
 
@@ -237,9 +238,9 @@ small_plot <- ggplot(table_acpamce[c(5:16,42:60),],
   coord_flip(ylim = c(-.22, .2)) +
   geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
                       color = estimand, shape = estimand, fill = estimand),
-                  position = position_dodge(width = 1), size = .2) +
+                  position = position_dodge(width = .3), size = .2) +
   labs(y = "", x = "") +
-  theme_donors(base_size = 11) +
+  theme_fg(base_size = 11) +
   theme(panel.grid.minor = element_blank(),
         axis.text.y = element_text(hjust = 0 , vjust = .5 ),
         legend.position = "bottom",
@@ -247,16 +248,18 @@ small_plot <- ggplot(table_acpamce[c(5:16,42:60),],
   scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
   scale_fill_manual(values = cbPalette[c(1,3,4)], name = "") +
   scale_colour_manual(values = cbPalette[c(1,3,4)], name = "")
+ggsave(small_plot, filename = "../Manuscript/Figures/fig_acp-amce_small.pdf",
+       height = 5, width = 6, device = cairo_pdf)
 
 complete_plot <- ggplot(table_acpamce, aes(y = estimate, x = modality, group = estimand)) +
   coord_flip(ylim = c(-.22, .2)) +
   geom_hline(data = hline, aes(yintercept = yint), size = .1, colour = "black") +
   geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
                       color = estimand, shape = estimand, fill = estimand),
-                  position = position_dodge(width = 1), size = .2) +
+                  position = position_dodge(width = .5), size = .2) +
   labs(y = "", x = "") +
   facet_grid(. ~ type) +
-  theme_donors(base_size = 11) +
+  theme_fg(base_size = 11) +
   theme(panel.grid.minor = element_blank(),
         axis.text.y = element_text(hjust = 0 , vjust = .5 ),
         legend.position = "bottom",
@@ -264,6 +267,8 @@ complete_plot <- ggplot(table_acpamce, aes(y = estimate, x = modality, group = e
   scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
   scale_fill_manual(values = cbPalette, name = "") +
   scale_colour_manual(values = cbPalette, name = "")
+ggsave(complete_plot, filename = "../Manuscript/Figures/fig_acp-amce_complete.pdf",
+       height = 12, width = 9, device = cairo_pdf)
   
 
 
@@ -384,7 +389,7 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
                     position = position_dodge(width = .5), size = .2) +
     labs(y = "", x = "") +
     facet_grid(. ~ type, labeller = label_wrap_gen(width = 30)) +
-    theme_donors(base_size = 11) +
+    theme_fg(base_size = 11) +
     theme(panel.grid.minor = element_blank(),
           legend.position = "bottom",
           legend.box.margin = margin(-20, 0, 0, 0))  +
@@ -401,7 +406,7 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
                     position = position_dodge(width = .5), size = .2) +
     labs(y = "", x = "") +
     facet_grid(. ~ type, labeller = label_wrap_gen(width = 30)) +
-    theme_donors(base_size = 11) +
+    theme_fg(base_size = 11) +
     theme(panel.grid.minor = element_blank(),
           legend.position = "bottom",
           legend.box.margin = margin(-20, 0, 0, 0))  +
@@ -411,6 +416,8 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
   
   (graph_var_countryreason / graph_var_jobeducation) +
     plot_layout(guides = "collect") & theme(legend.position = 'bottom')
+  ggsave(filename = "../Manuscript/Figures/fig_rel-imp_cond.pdf",
+         height = 6, width = 6, device = cairo_pdf)
   
   # Regular
   graph_var_regular <- ggplot(table_var[table_var$type == "Regular",],
@@ -419,13 +426,15 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
     geom_pointrange(aes(ymin = lower, ymax = upper, shape = estimand, color = estimand, fill = estimand),
                     position = position_dodge(width = .5), size = .2) +
     labs(y = "", x = "") +
-    theme_donors(base_size = 11) +
+    theme_fg(base_size = 11) +
     theme(panel.grid.minor = element_blank(),
           legend.position = "bottom",
           legend.box.margin = margin(-20, 0, 0, 0))  +
     scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
     scale_fill_manual(values = cbPalette, name = "") +
     scale_colour_manual(values = cbPalette, name = "")
+  ggsave(graph_var_regular, filename = "../Manuscript/Figures/fig_rel-imp_reg.pdf",
+         height = 3.1, width = 3.9, device = cairo_pdf)
   
  
   
@@ -514,10 +523,10 @@ diff_plot <- ggplot(table_dacpdsp, aes(y = estimate, x = modality, group = estim
   geom_hline(aes(yintercept = 0), size = .1, colour = "black") +
   geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
                       color = estimand, shape = estimand, fill = estimand),
-                  position = position_dodge(width = 1), size = .2) +
+                  position = position_dodge(width = .5), size = .2) +
   labs(y = "", x = "") +
   facet_grid(. ~ type) +
-  theme_donors(base_size = 11) +
+  theme_fg(base_size = 11) +
   theme(panel.grid.minor = element_blank(),
         axis.text.y = element_text(hjust = 0 , vjust = .5 ),
         legend.position = "bottom",
@@ -525,3 +534,5 @@ diff_plot <- ggplot(table_dacpdsp, aes(y = estimate, x = modality, group = estim
   scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
   scale_fill_manual(values = cbPalette[c(1,3,4,2)], name = "") +
   scale_colour_manual(values = cbPalette[c(1,3,4,2)], name = "")
+ggsave(diff_plot, filename = "../Manuscript/Figures/fig_dacp-dsp.pdf",
+       height = 12, width = 9, device = cairo_pdf)
