@@ -8,5 +8,4 @@ This repository contains the following replication materials:
 * the R function used to estimate ACPs, differences in ACPs, and direct pairwise preferences, along with its documentation;
 * the R code that replicates my partial replication of Hainmueller and Hopkins's immigrant experiment. The data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR);
 * the R code that replicates my partial replication of Mummolo and Nall's community experiment. The data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EDGRDC);
-* the R code that replicates the imaginary example presented in the supplemental information A;
 * the R code that replicates the Monte Carlo simulations presented in the supplemental information D.
