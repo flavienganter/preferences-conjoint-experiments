@@ -143,5 +143,5 @@ commplot <- ggplot(table_acpamce, aes(y = estimate, x = modality, group = type))
   scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
   scale_fill_manual(values = cbPalette, name = "") +
   scale_colour_manual(values = cbPalette, name = "")
-ggsave(commplot, filename = "../Manuscript/Figures/fig_acp-amce_comm.pdf",
-       height = 4, width = 6, device = cairo_pdf)
+ggsave(commplot, filename = "../../Manuscript/Figures/fig_acp-amce_comm.pdf",
+       height = 2.8, width = 6, device = cairo_pdf)
