@@ -1,43 +1,41 @@
 # Replicate the analyses of the immigrant experiment (Hainmueller, Hopkins and Yamamoto 2014, and
 # Hanmueller and Hopkins 2015) using the ACP framework (Ganter 2021)
 # Author: Flavien Ganter
-# Created on December 29, 2019; last modified on February 23, 2020
+# Created on December 29, 2019; last modified on July 16, 2021
 
 
 
-### PRELIMINARIES ###########################################################
+#### PRELIMINARIES ####
 
-
+# Clear working space
 rm(list = ls())
 
+# Set working directory
+setwd("") ### specify path to root replication folder
 
-## Working directory
-setwd("") ### specify working directory
-
-
-## Packages
-library(ggplot2)
+# Packages and functions
+library(tidyverse)
 library(haven)
 library(sjlabelled)
 library(xlsx)
 library(patchwork)
-source("../RFunction/conjacp.R")
-source("FunctionTableGraph.R")
-source("FunctionVCOVCluster.R")
+source("Functions/conjacp.R") ### Function that calculates ACPs
+source("Functions/FunctionVCOVCluster.R") ### Function that calculates clustered SEs
+source("Functions/FunctionTableGraph.R") ### Function that prepare the data frame for result graphs
+source("Functions/theme_graph.R")
 
-
-## Graph theme add-on
+# Graph theme add-on
 extrafont::loadfonts()
-source("theme_graph.R")
-cbPalette <- c("#E69F00", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#999999", "#56B4E9", "#F0E442")
+cbPalette <- c("#E69F00", "#009E73", "#0072B2", "#D55E00",
+               "#CC79A7", "#999999", "#56B4E9", "#F0E442")
 
 
 
-### DATA ###########################################################
+#### DATA ####
 
 
-# Import
-data_long <- read_stata("") ### specify data (available on https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR)
+# Import data
+data_long <- read_stata("Data/HainmuellerHopkins.dta")
 
 # Convert into factors and get labels
 data_long[, c(3:12)] <- lapply(data_long[, c(3:12)],
@@ -57,28 +55,19 @@ data_long$FeatEd      <- relevel(data_long$FeatEd, "Equivalent to completing hig
 data_long$FeatJob     <- relevel(data_long$FeatJob, "Teacher")
 data_long$FeatCountry <- relevel(data_long$FeatCountry, "India")
 
-# Create subgroup variable
-data_long$highethno <- as.factor(ifelse(data_long$ethnocentrism > -100 &
-                                          data_long$ethnocentrism <= 10,
-                                        "Low Ethnocentrism",
-                                        ifelse(data_long$ethnocentrism > 10 &
-                                                 data_long$ethnocentrism < 100,
-                                               "High Ethnocentrism", NA)))
-
 # Create CONJACP object for ACP and DACP estimation
 conjacp_data <- conjacp.prepdata(choice ~ FeatEd * FeatJob + FeatGender + FeatCountry * FeatReason +
                                    FeatExp + FeatPlans + FeatTrips + FeatLang,
                                  data = data_long,
                                  tasks = "task",
-                                 subgroups = "highethno",
                                  id = "CaseID")
 
 
 
-### ACP & AMCE ###########################################################
+#### ACP & AMCE ####
 
 
-## Estimate QOIs
+## Estimate quantities of interest
 
 # ACPs
 results_acp <- conjacp.estimation(conjacp_data,
@@ -91,7 +80,7 @@ results_acp <- conjacp.estimation(conjacp_data,
   
     # Create empty vectors to store results
     ind_estimate <- NULL
-    ind_se <- NULL
+    ind_se       <- NULL
     
     # Loop over independently randomized attributes
     for (attribute in c("FeatGender", "FeatExp", "FeatPlans", "FeatTrips", "FeatLang")) {
@@ -105,9 +94,9 @@ results_acp <- conjacp.estimation(conjacp_data,
       
       # store estimates
       ind_estimate <- c(ind_estimate, coef(model)[-1])
-      vcov <- vcovCluster(model, data_long$CaseID)
-      ind_se <- c(ind_se, sqrt(diag(vcov))
-              [2:(nlevels(as.data.frame(data_long)[, match(attribute, colnames(data_long))]))])
+      vcov         <- vcovCluster(model, data_long$CaseID)
+      ind_se       <- c(ind_se, sqrt(diag(vcov))
+                        [2:(nlevels(as.data.frame(data_long)[, match(attribute, colnames(data_long))]))])
       
     }
 
@@ -117,8 +106,8 @@ results_acp <- conjacp.estimation(conjacp_data,
     
       # Estimate model
       model <- lm(choice ~ FeatCountry * FeatReason, data = data_long)
-      coef <- coef(model)[!is.na(coef(model))]
-      vcov <- vcovCluster(model, data_long$CaseID)
+      coef  <- coef(model)[!is.na(coef(model))]
+      vcov  <- vcovCluster(model, data_long$CaseID)
       
       # Weights
       weight_reason <- matrix(c(1/10 * c(rep(0, 10), 10, 0, rep(1, 9), rep(0, 3)),
@@ -132,15 +121,15 @@ results_acp <- conjacp.estimation(conjacp_data,
       # AMCEs
       cond_estimate <- c(t(weight_reason) %*% as.matrix(coef),
                          t(weight_country) %*% as.matrix(coef))
-      cond_se <- c(sqrt(diag(t(weight_reason) %*% vcov %*% weight_reason)),
-                   sqrt(diag(t(weight_country) %*% vcov %*% weight_country)))
+      cond_se       <- c(sqrt(diag(t(weight_reason) %*% vcov %*% weight_reason)),
+                         sqrt(diag(t(weight_country) %*% vcov %*% weight_country)))
       
     # Education * Occupation
       
       # Estimate model
       model <- lm(choice ~ FeatEd * FeatJob, data = data_long)
-      coef <- coef(model)[!is.na(coef(model))]
-      vcov <- vcovCluster(model, data_long$CaseID)
+      coef  <- coef(model)[!is.na(coef(model))]
+      vcov  <- vcovCluster(model, data_long$CaseID)
       
       # Weights
       weight_educ <- matrix(NA, ncol = 6, nrow = 61)
@@ -165,9 +154,9 @@ results_acp <- conjacp.estimation(conjacp_data,
       cond_estimate <- c(cond_estimate,
                          t(weight_educ) %*% as.matrix(coef),
                          t(weight_occ) %*% as.matrix(coef))
-      cond_se <- c(cond_se,
-                   sqrt(diag(t(weight_educ) %*% vcov %*% weight_educ)),
-                   sqrt(diag(t(weight_occ) %*% vcov %*% weight_occ)))
+      cond_se       <- c(cond_se,
+                         sqrt(diag(t(weight_educ) %*% vcov %*% weight_educ)),
+                         sqrt(diag(t(weight_occ) %*% vcov %*% weight_occ)))
       
     # Names
     cond_names <- NULL
@@ -199,16 +188,16 @@ results_acp <- conjacp.estimation(conjacp_data,
     table_acp_cacpcond <- table.graph(results_acp,
                                       estimand = "acp",
                                       cacp = "conditional")
-    table_acp_cacpcond$estimand <- NA
-    table_acp_cacpcond$estimand[1:29] <- "ACP"
+    table_acp_cacpcond$estimand        <- NA
+    table_acp_cacpcond$estimand[1:29]  <- "ACP"
     table_acp_cacpcond$estimand[30:67] <- "CACP, Unrestricted levels"
   
     # Comparable pairs
     table_acp_cacpcomp <- table.graph(results_acp,
                                       estimand = "acp",
                                       cacp = "all_comparable")
-    table_acp_cacpcomp$estimand <- NA
-    table_acp_cacpcomp$estimand[1:29] <- "ACP"
+    table_acp_cacpcomp$estimand        <- NA
+    table_acp_cacpcomp$estimand[1:29]  <- "ACP"
     table_acp_cacpcomp$estimand[30:67] <- "CACP, Comparable pairs"
   
   table_acp <- rbind(table_acp_cacpcond, table_acp_cacpcomp)
@@ -218,22 +207,21 @@ results_acp <- conjacp.estimation(conjacp_data,
   table_acp$type <- "(C)ACP"
 
   # AMCEs
-  estimate <- c(ind_estimate, cond_estimate)
-  names(estimate) <- c(names(estimate)[1:14], cond_names)
-  results_amce <- list(estimates = estimate,
-                       vcov = NULL,
-                       se = c(ind_se, cond_se))
-  table_amce <- table.graph(results_amce,
-                            estimand = "amce")
+  estimate            <- c(ind_estimate, cond_estimate)
+  names(estimate)     <- c(names(estimate)[1:14], cond_names)
+  results_amce        <- list(estimates = estimate,
+                              vcov = NULL,
+                              se = c(ind_se, cond_se))
+  table_amce          <- table.graph(results_amce, estimand = "amce")
   table_amce$estimand <- "AMCE"
-  table_amce$type <- "AMCE"
+  table_amce$type     <- "AMCE"
 
 table_acpamce <- rbind(table_acp, table_amce)
 table_acpamce[, c("estimate", "se")] <- apply(table_acpamce[, c("estimate", "se")], 2, as.numeric)
 hline <- data.frame(type = c("AMCE", "(C)ACP"), yint = c(0, 5))
 
 # Plot graphs
-small_plot <- ggplot(table_acpamce[c(5:16,42:60),],
+immplot <- ggplot(table_acpamce[c(5:16,42:60),],
                         aes(y = estimate, x = modality, group = estimand)) +
   coord_flip(ylim = c(-.22, .2)) +
   geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
@@ -248,31 +236,12 @@ small_plot <- ggplot(table_acpamce[c(5:16,42:60),],
   scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
   scale_fill_manual(values = cbPalette[c(1,3,4)], name = "") +
   scale_colour_manual(values = cbPalette[c(1,3,4)], name = "")
-ggsave(small_plot, filename = "../Manuscript/Figures/fig_acp-amce_small.pdf",
+ggsave(immplot, filename = "Output/acpamce_imm.pdf",
        height = 5, width = 6, device = cairo_pdf)
-
-complete_plot <- ggplot(table_acpamce, aes(y = estimate, x = modality, group = estimand)) +
-  coord_flip(ylim = c(-.22, .2)) +
-  geom_hline(data = hline, aes(yintercept = yint), size = .1, colour = "black") +
-  geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
-                      color = estimand, shape = estimand, fill = estimand),
-                  position = position_dodge(width = .5), size = .2) +
-  labs(y = "", x = "") +
-  facet_grid(. ~ type) +
-  theme_fg(base_size = 11) +
-  theme(panel.grid.minor = element_blank(),
-        axis.text.y = element_text(hjust = 0 , vjust = .5 ),
-        legend.position = "bottom",
-        legend.box.margin = margin(-20, 0, 0, 0))  +
-  scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
-  scale_fill_manual(values = cbPalette, name = "") +
-  scale_colour_manual(values = cbPalette, name = "")
-ggsave(complete_plot, filename = "../Manuscript/Figures/fig_acp-amce_complete.pdf",
-       height = 12, width = 9, device = cairo_pdf)
   
 
 
-### RELATIVE IMPORTANCE ###########################################################
+#### RELATIVE IMPORTANCE ####
     
   
 ## Estimation
@@ -416,7 +385,7 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
   
   (graph_var_countryreason / graph_var_jobeducation) +
     plot_layout(guides = "collect") & theme(legend.position = 'bottom')
-  ggsave(filename = "../Manuscript/Figures/fig_rel-imp_cond.pdf",
+  ggsave(filename = "Output/relimp_cond.pdf",
          height = 6, width = 6, device = cairo_pdf)
   
   # Regular
@@ -433,106 +402,5 @@ levels(table_var$attribute) <- c("Origin", "Education", "Job Experience", "Gende
     scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
     scale_fill_manual(values = cbPalette, name = "") +
     scale_colour_manual(values = cbPalette, name = "")
-  ggsave(graph_var_regular, filename = "../Manuscript/Figures/fig_rel-imp_reg.pdf",
+  ggsave(graph_var_regular, filename = "Output/relimp_reg.pdf",
          height = 3.1, width = 3.9, device = cairo_pdf)
-  
- 
-  
-
-### DACP & DSP ###########################################################
-
-
-## Estimate QOIs
-
-# DACPs
-results_dacp <- conjacp.estimation(conjacp_data,
-                                   estimand = "dacp",
-                                   by = "highethno",
-                                   adjust = FALSE)
-  
-# DSPs
-  
-  # Create empty vectors to store results
-  dsp_estimate <- NULL
-  dsp_se       <- NULL
-  
-  # Loop over attributes
-  for (attribute in c("FeatGender", "FeatExp", "FeatPlans", "FeatTrips", "FeatLang",
-                      "FeatEd", "FeatJob", "FeatReason", "FeatCountry")) {
-    
-    # Create model matrix
-    data_model <- data_long[, c(attribute, "choice", "highethno")]
-    names(data_model)[-(ncol(data_model)-1)] <- paste0(names(data_model)[-(ncol(data_model)-1)], ".")
-    
-    # Estimate model
-    model <- lm(choice ~ 0 + highethno. * . - highethno., data = data_model)
-    
-    # Store estimates
-    nmod <- nlevels(data_model[,1])
-    dsp_estimate <- c(dsp_estimate, coef(model)[-c(1:nmod)])
-    vcov <- vcovCluster(model, data_long$CaseID[!is.na(data_long$highethno)])
-    dsp_se <- c(dsp_se, sqrt(diag(vcov))[-c(1:nmod)])
-    
-  }
-  names(dsp_estimate) <- str_extract(names(dsp_estimate), "(?<=\\:).+")
-
-  
-## Plot graph
-  
-# Prepare estimate table
-  
-  # ACPs
-  
-    # Unrestricted levels
-    table_dacp_cacpcond <- table.graph(results_dacp,
-                                       estimand = "dacp",
-                                       cacp = "conditional")
-    table_dacp_cacpcond$estimand <- NA
-    table_dacp_cacpcond$estimand[1:29] <- "DACP"
-    table_dacp_cacpcond$estimand[30:67] <- "DCACP, Unrestricted levels"
-    
-    # Comparable pairs
-    table_dacp_cacpcomp <- table.graph(results_dacp,
-                                       estimand = "dacp",
-                                       cacp = "all_comparable")
-    table_dacp_cacpcomp$estimand <- NA
-    table_dacp_cacpcomp$estimand[1:29] <- "DACP"
-    table_dacp_cacpcomp$estimand[30:67] <- "DCACP, Comparable pairs"
-    
-  table_dacp <- rbind(table_dacp_cacpcond, table_dacp_cacpcomp)
-  table_dacp <- table_dacp[order(table_dacp$order),]
-  table_dacp <- table_dacp[!duplicated(table_dacp[, c("modality", "estimate")]),]
-  table_dacp <- table_dacp[-c(32,34,36,38,56,60,66,68,80,82,84,86,88,90,98),]
-  table_dacp$type <- "D(C)ACP"
-  
-  # DSPs
-  results_dsp <- list(estimates = -dsp_estimate,
-                       vcov = NULL,
-                       se = dsp_se)
-  table_dsp <- table.graph(results_dsp,
-                            estimand = "dsp")
-  table_dsp$estimand <- "DMM"
-  table_dsp$type <- "DMM"
-
-table_dacpdsp <- rbind(table_dacp, table_dsp)
-table_dacpdsp[, c("estimate", "se")] <- apply(table_dacpdsp[, c("estimate", "se")], 2, as.numeric)
-
-# Plot graph
-diff_plot <- ggplot(table_dacpdsp, aes(y = estimate, x = modality, group = estimand)) +
-  coord_flip(ylim = c(-.22, .2)) +
-  geom_hline(aes(yintercept = 0), size = .1, colour = "black") +
-  geom_pointrange(aes(ymin = estimate - 1.96 * se, ymax = estimate + 1.96 * se,
-                      color = estimand, shape = estimand, fill = estimand),
-                  position = position_dodge(width = .5), size = .2) +
-  labs(y = "", x = "") +
-  facet_grid(. ~ type) +
-  theme_fg(base_size = 11) +
-  theme(panel.grid.minor = element_blank(),
-        axis.text.y = element_text(hjust = 0 , vjust = .5 ),
-        legend.position = "bottom",
-        legend.box.margin = margin(-20, 0, 0, 0))  +
-  scale_shape_manual(values = c(21, 22, 23, 23), name = "") +
-  scale_fill_manual(values = cbPalette[c(1,3,4,2)], name = "") +
-  scale_colour_manual(values = cbPalette[c(1,3,4,2)], name = "")
-ggsave(diff_plot, filename = "../Manuscript/Figures/fig_dacp-dsp.pdf",
-       height = 12, width = 9, device = cairo_pdf)

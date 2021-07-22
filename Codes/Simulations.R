@@ -1,20 +1,21 @@
-# Monte Carlo simulation exercise
-# Flavien Ganter
-# Created on December 1, 2019; last modified on October 25, 2020
+# Monte Carlo simulations of the ACP (Ganter 2021)
+# Author: Flavien Ganter
+# Created on December 1, 2019; last modified on July 16, 2021
 
 
 
-#### Preliminaries ####
+#### PRELIMINARIES ####
 
+# Clear workin space
 rm(list = ls())
 
-# Working directory
-setwd("") ### specify working directory
+# Set working directory
+setwd("") ### specify path to root replication folder
 
-# Packages
+# Packages and functions
 library(foreach)
 library(doParallel)
-source("../RFunction/conjacp.R")
+source("Functions/conjacp.R")
 
 # Seed
 set.seed(1319)
@@ -24,8 +25,7 @@ registerDoParallel(cores = 4)
 
 
 
-
-#### Set simulation parameters ####
+#### SET SIMULATION PARAMETERS ####
 
 # Sample size
 n           <- 2000
@@ -71,7 +71,10 @@ catb34_g    <- -.03
 
 
 
-#### Simulation - w/o interactions ####
+#### SIMULATIONS - WITHOUT INTERACTION ####
+
+### This chunk of code takes time to finish. To directly obtain the tables,
+### skip to the TABLES section to load previously simulated data.
 
 # Number of simulations
 n_simul <- 5000
@@ -253,12 +256,15 @@ simulation_results <- list(estimate_acp         = t(sapply(simulation_results, "
                            se_p                 = t(sapply(simulation_results, "[[", 10)),
                            estimate_p_adjust    = t(sapply(simulation_results, "[[", 11)),
                            se_p_adjust          = t(sapply(simulation_results, "[[", 12)))
-save(simulation_results, file = "SimulationResults.RData")
+save(simulation_results, file = "Output/SimulationIntermediate.RData")
 
 
 
 
-#### Simulation - w/ interactions ####
+#### SIMULATIONS - WITH INTERACTION ####
+
+### This chunk of code takes time to finish. To directly obtain the tables,
+### skip to the TABLES section to load previously simulated data.
 
 # Number of simulations
 n_simul <- 5000
@@ -384,15 +390,15 @@ simulation_results_int <- list(estimate_acp         = t(sapply(simulation_result
                                se_acp               = t(sapply(simulation_results_int, "[[", 2)),
                                estimate_acp_adjust  = t(sapply(simulation_results_int, "[[", 3)),
                                se_acp_adjust        = t(sapply(simulation_results_int, "[[", 4)))
-save(simulation_results_int, file = "SimulationResultsInteraction.RData")
+save(simulation_results_int, file = "Output/SimulationIntermediate_int.RData")
 
 
 
-#### Tables ####
+#### TABLES ####
 
-### uncoment to use previous simulations
-#load("SimulationResults.RData")
-#load("SimulationResultsInteraction.RData")
+# Load simulated data
+load("Output/SimulationIntermediate.RData")
+load("Output/SimulationIntermediate_int.RData")
 
 
 ## ACP
@@ -534,6 +540,21 @@ for (var in 1:nrow_table) {
 table_acp_int_unadj[,2:8] <- apply(table_acp_int_unadj[,2:8], c(1, 2), round, 3)
 table_acp_int_adj[,2:8] <- apply(table_acp_int_adj[,2:8], c(1, 2), round, 3)
 
+  # Create finale table for paper
+  table_acp_final <- rbind(table_acp_unadj, table_acp_int_unadj)
+  table_acp_final$estimate <- c("Continuous: Slope", "Binary: Level 1", "Binary: Level 2",
+                                "Cat1: Level 1 (conditional)", "Cat1: Level 1 (comparable pairs)",
+                                "Cat1: Level 2 (conditional)", "Cat1: Level 2 (comparable pairs)",
+                                "Cat1: Level 3 (conditional)", "Cat1: Level 3 (comparable pairs)",
+                                "Cat1: Level 4",
+                                "Cat2: Level 1 (conditional)", "Cat2: Level 1 (comparable pairs)",
+                                "Cat2: Level 2 (conditional)", "Cat2: Level 2 (comparable pairs)",
+                                "Cat2: Level 3", "Cat2: Level 4",
+                                "Cat2_int: Level 1 (conditional)", "Cat2_int: Level 1 (comparable pairs)",
+                                "Cat2_int: Level 2 (conditional)", "Cat2_int: Level 2 (comparable pairs)",
+                                "Cat2_int: Level 3", "Cat2_int: Level 4")
+  write_csv(table_acp_final, "Output/simulations_acp.csv")
+
 
 
 ## DACP
@@ -603,6 +624,13 @@ for (var in 1:nrow_table) {
 table_dacp_unadj[,2:8] <- apply(table_dacp_unadj[,2:8], c(1, 2), round, 3)
 table_dacp_adj[,2:8] <- apply(table_dacp_adj[,2:8], c(1, 2), round, 3)
 
+  # Create finale table for paper
+  table_dacp_final <- table_dacp_unadj
+  table_dacp_final$estimate <- c("Continuous: Slope", "Binary: Level 1", "Binary: Level 2",
+                                "Cat1: Level 1", "Cat1: Level 2", "Cat1: Level 3", "Cat1: Level 4",
+                                "Cat2: Level 1", "Cat2: Level 2", "Cat2: Level 3", "Cat2: Level 4")
+  write_csv(table_dacp_final, "Output/simulations_dacp.csv")
+
 
 
 ## P
@@ -662,3 +690,13 @@ for (var in 1:nrow_table) {
 }
 table_p_unadj[,2:8] <- apply(table_p_unadj[,2:8], c(1, 2), round, 3)
 table_p_adj[,2:8] <- apply(table_p_adj[,2:8], c(1, 2), round, 3)
+
+  # Create finale table for paper
+  table_p_final <- table_p_unadj
+  table_p_final$estimate <- c("Continuous: Slope", "Binary: Levels 1-2", "Cat1: Levels 1-2",
+                              "Cat1: Levels 1-3", "Cat1: Levels 1-4", "Cat1: Levels 2-3",
+                              "Cat1: Levels 2-4", "Cat1: Levels 3-4", "Cat2: Levels 1-2",
+                              "Cat2: Levels 1-3", "Cat2: Levels 1-4", "Cat2: Levels 2-3",
+                              "Cat2: Levels 2-4", "Cat2: Levels 3-4")
+  write_csv(table_p_final, "Output/simulations_p.csv")
+  
