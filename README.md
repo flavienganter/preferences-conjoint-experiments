@@ -6,6 +6,62 @@ The current draft of the paper is available on [SocArXiv](https://osf.io/preprin
 
 This repository contains the following replication materials:
 * the R function used to estimate ACPs, differences in ACPs, and direct pairwise preferences, along with its documentation;
-* the R code that replicates my partial replication of Hainmueller and Hopkins's immigrant experiment. The data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR);
-* the R code that replicates my partial replication of Mummolo and Nall's community experiment. The data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EDGRDC);
+* the R code that replicates my partial replication of Hainmueller and Hopkins's immigrant experiment. The original data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/THJYQR);
+* the R code that replicates my partial replication of Mummolo and Nall's community experiment. The original data are available on the [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/EDGRDC);
 * the R code that replicates the Monte Carlo simulations presented in the supplemental information D.
+
+***
+
+### Computational platforms:
+
+1. I tested my code on a MacBook Pro 2019 with Quad-Core Intel Core i5 and 16G RAM. The operation system is macOS 11.4 (BigSur).
+2. The R version is 3.6.1.
+
+### Packages
+
+Please install packages “doParallel”, “foreach”, “haven”, “patchwork”, “sandwich”, “sjlabelled”, “stringr”, “tidyverse”, and “xlsx” from CRAN.
+
+### Folders
+
+| **Folder** | **Description** |
+| ---------- | --------------- |
+| Codes | Stores code files required to replicate Hainmueller and Hopkins (2015) and Mummolo and Nall (2017), to run the Monte Carlo simulations, and to generate the graphs and tables included in the paper |
+| Data | Stores data from Hainmueller and Hopkins (2015) and Mummolo and Nall (2017) |
+| Functions | Stores required additional functions |
+| Output | Stores graphs and tables from code files |
+
+### Notes
+
+1. Please make sure to set path to the root replication folder in R.
+2. Each code file is independent.
+3. All graphs and tables are saved in the “Output” folder. When you run the code, existing files in
+this folder will be overwritten, which is normal.
+4. Figure 1, Table A1, and Table D1 present information on the data format, on the literature review,
+and on the parameters of the simulation. Replication is not applicable.
+5. Simulation results may not be exactly be replicated due to the randomness of the simulation
+process.
+6. The Monte Carlo simulation takes hours to finish. To speed things up, you can use the
+intermediate files that store simulation results and can be used to construct the simulation result tables.
+
+### File names and Tables / Figures in the paper
+
+| **In Paper** | **File name**|
+| --- | --- |
+| Figure 1 | - |
+| Figure 2 | acpamce_imm.pdf |
+| Figure 3 | acpamce_comm.pdf |
+| Table A1 | - |
+| Table D1 | - |
+| Table D2 | simulations_acp.csv |
+| Table D3 | simulations_dacp.csv |
+| Table D4 | simulations_p.csv |
+| Figure B1 | relimp_reg.pdf |
+| Figure B2 | relimp_cond.pdf |
+
+### Code files
+
+| **File name** | **Description** | **Output** | **Execution time**|
+| --- | --- | --- | --- |
+| CommunityReplication.R | Replicates partially Mummolo and Nall (2017) | acpamce_comm.pdf | Minutes |
+| ImmigrantReplication.R | Replicates partially Hainmueller and Hopkins (2015) | acpamce_imm.pdf relimp_reg.pdf relimp_cond.pdf | Minutes |
+| Simulations.R | Runs the Monte Carlo simulations | SimulationIntermediate.RData SimulationIntermediate_int.RData simulations_acp.csv simulations_dacp.csv simulations_p.csv | Hours |
