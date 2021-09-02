@@ -51,7 +51,7 @@ data_long$conj.place          <- relevel(data_long$conj.place, "City – downtow
 
 # Create task variable
 data_long         <- data_long[order(data_long$respid),]
-data_long$RespID  <- group_indices(data_long, respid)
+data_long$RespID  <- data_long %>% group_by(respid) %>% group_indices()
 data_long$task_fg <- cumsum(!duplicated(data_long[, c("RespID", "task")]))
 
 # Create subgroup variable

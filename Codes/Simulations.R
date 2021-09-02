@@ -553,7 +553,7 @@ table_acp_int_adj[,2:8] <- apply(table_acp_int_adj[,2:8], c(1, 2), round, 3)
                                 "Cat2_int: Level 1 (conditional)", "Cat2_int: Level 1 (comparable pairs)",
                                 "Cat2_int: Level 2 (conditional)", "Cat2_int: Level 2 (comparable pairs)",
                                 "Cat2_int: Level 3", "Cat2_int: Level 4")
-  write_csv(table_acp_final, "Output/simulations_acp.csv")
+  write.csv(table_acp_final, "Output/simulations_acp.csv")
 
 
 
@@ -629,7 +629,7 @@ table_dacp_adj[,2:8] <- apply(table_dacp_adj[,2:8], c(1, 2), round, 3)
   table_dacp_final$estimate <- c("Continuous: Slope", "Binary: Level 1", "Binary: Level 2",
                                 "Cat1: Level 1", "Cat1: Level 2", "Cat1: Level 3", "Cat1: Level 4",
                                 "Cat2: Level 1", "Cat2: Level 2", "Cat2: Level 3", "Cat2: Level 4")
-  write_csv(table_dacp_final, "Output/simulations_dacp.csv")
+  write.csv(table_dacp_final, "Output/simulations_dacp.csv")
 
 
 
@@ -698,5 +698,5 @@ table_p_adj[,2:8] <- apply(table_p_adj[,2:8], c(1, 2), round, 3)
                               "Cat1: Levels 2-4", "Cat1: Levels 3-4", "Cat2: Levels 1-2",
                               "Cat2: Levels 1-3", "Cat2: Levels 1-4", "Cat2: Levels 2-3",
                               "Cat2: Levels 2-4", "Cat2: Levels 3-4")
-  write_csv(table_p_final, "Output/simulations_p.csv")
+  write.csv(table_p_final, "Output/simulations_p.csv")
   
