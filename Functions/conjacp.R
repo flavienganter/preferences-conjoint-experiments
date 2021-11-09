@@ -99,6 +99,10 @@ conjacp.prepdata <- function(formula,
   ### PRELIMINARY CHECKS
 
   
+  
+  # Make sure data is a data frame, not a tibble
+  data <- as.data.frame(data)
+  
   # Outcome
   var_y <- all.vars(stats::update(formula, . ~ 0))
   if (var_y == ".") {
