@@ -3,7 +3,7 @@
 # conjoint experiments
 # v8
 # Flavien Ganter
-# Created on July 28, 2019; last modified on February 11, 2021
+# Created on July 28, 2019; last modified on August 12, 2020
 
 # This file creates seven functions:
 ## 1. conjacp - A general function for calculating ACPs, DACPs, and direct 
@@ -99,10 +99,6 @@ conjacp.prepdata <- function(formula,
   ### PRELIMINARY CHECKS
 
   
-  
-  # Make sure data is a data frame, not a tibble
-  data <- as.data.frame(data)
-  
   # Outcome
   var_y <- all.vars(stats::update(formula, . ~ 0))
   if (var_y == ".") {
@@ -145,6 +141,19 @@ conjacp.prepdata <- function(formula,
   } else {
     subgroups_id <- data.frame(subgroup = rep(1, nrow(data)))
     subgroups    <- "subgroup"
+  }
+  
+  # Task variable (recode if it does not uniquely identify tasks)
+  if (any(unlist(lapply(unique(data[, tasks]), 
+                        function(y) sum(unlist(lapply(data[, tasks], 
+                                                      function(x) x == y)))))
+          > 2)) {
+    if (is.null(id)) {
+      stop("The tasks variable does not uniquely identify pairs of profiles that were simulatenously presented to respondents in the data. Specify the id argument, or respecify the tasks variable.")
+    } else {
+      data[, tasks] <- cumsum(!duplicated(data[, c(match(tasks, names(data)), 
+                                                   match(id, names(data)))]))
+    }
   }
   
   # Respondents' ID
