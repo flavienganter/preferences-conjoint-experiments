@@ -1,9 +1,9 @@
 # R function that calculates ACPs, CACPs, differences in ACPs and CACPs,
 # and direct pairwise selection probabilities for paired forced-choice
 # conjoint experiments
-# v8
+# v12
 # Flavien Ganter
-# Created on July 28, 2019; last modified on August 12, 2020
+# Created on July 28, 2019; last modified on January 19, 2024
 
 # This file creates seven functions:
 ## 1. conjacp - A general function for calculating ACPs, DACPs, and direct 
@@ -131,11 +131,11 @@ conjacp.prepdata <- function(formula,
         stop("Subgroup variables should be factor variabes.")
       }
       if (nlevels(subgroups_id[, subgroup_temp]) != 2) {
-        stop("Subgroup variables should have two, and only two, subgroups.")
+        stop("Subgroup variables should have two, and only two, levels.")
       }
     }
     if (sum(is.na(subgroups_id)) != 0) {
-      warning("There are missing values in the subgroup variables. Corresponding observations will be omitted in subgroup calculations.",
+      warning("There are missing values in the subgroup variables. Corresponding observations are omitted in subgroup calculations.",
               immediate. = TRUE)
     }
   } else {
@@ -144,9 +144,7 @@ conjacp.prepdata <- function(formula,
   }
   
   # Task variable (recode if it does not uniquely identify tasks)
-  if (any(unlist(lapply(unique(data[, tasks]), 
-                        function(y) sum(unlist(lapply(data[, tasks], 
-                                                      function(x) x == y)))))
+  if (any(table(data[, tasks]) > 2)) {
           > 2)) {
     if (is.null(id)) {
       stop("The tasks variable does not uniquely identify pairs of profiles that were simulatenously presented to respondents in the data. Specify the id argument, or respecify the tasks variable.")
@@ -252,15 +250,33 @@ conjacp.prepdata <- function(formula,
                                -which(names(data_long) %in% c("outcome", "option"))]
   names(data_wide_compl)[which(names(data_wide_compl) %in% attr_x)] <-
     paste0(names(data_wide_compl)[which(names(data_wide_compl) %in% attr_x)], ".2")
-  data_wide <- base::merge(data_wide, data_wide_compl, by = c("tasks", "clust", subgroups))
+  names(data_wide_compl)[which(names(data_wide_compl) == subgroups)] <-
+      paste0(names(data_wide_compl)[which(names(data_wide_compl) == subgroups)], ".temp")
+  data_wide <- base::merge(data_wide, data_wide_compl, by = c("tasks", "clust"))
   if (sum(complete.cases(data_wide[, -which(names(data_wide) %in% subgroups)])) <
       nrow(data_wide[, -which(names(data_wide) %in% subgroups)])) {
     warning("Some observations have been omitted due to missing values.")
     data_wide <- data_wide[complete.cases(data_wide[, -which(names(data_wide) %in% subgroups)]),]
   }
   
+  # Check for missingness and consistency in subgroup variables
+  if (sum(complete.cases(data_wide[, which(names(data_wide) %in% subgroups)])) <
+      nrow(as.data.frame(data_wide[, which(names(data_wide) %in% subgroups)]))) {
+    warning("The subgroup variables are missing for some observations. They are omitted in subgroup analyses.")
+  }
+  if (any(unlist(
+    lapply(subgroups, function(x) return(identical(
+      data_wide[[x]], 
+      data_wide[[paste0(x, ".temp")]]
+      )))
+    ) == FALSE)) {
+    stop("The subgroup variables are not consistent for some observations.")
+  }
+  data_wide <- data_wide[, -which(names(data_wide) %in% paste0(subgroups, ".temp"))]
+
   
-  ## Detect randomization restrictionss
+  
+  ## Detect randomization restrictions
   
   # Detect restricted attributes
   attr_restricted <- NULL
