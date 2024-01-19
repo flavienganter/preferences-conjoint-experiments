@@ -71,8 +71,7 @@ conjacp_data <- conjacp.prepdata(choice ~ FeatEd * FeatJob + FeatGender + FeatCo
 
 # ACPs
 results_acp <- conjacp.estimation(conjacp_data,
-                                  estimand = "acp",
-                                  adjust = FALSE)
+                                  estimand = "acp")
   
 # AMCEs
   
