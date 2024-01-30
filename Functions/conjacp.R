@@ -1,7 +1,7 @@
 # R function that calculates ACPs, CACPs, differences in ACPs and CACPs,
 # and direct pairwise selection probabilities for paired forced-choice
 # conjoint experiments
-# v12
+# v13
 # Flavien Ganter
 # Created on July 28, 2019; last modified on January 19, 2024
 
@@ -573,7 +573,7 @@ conjacp.estimation <- function(conjacp.prepdata.object,
       data_model <- data_model[, variables_names_reorder]
       
       # Adjustement
-      if (adjust == FALSE) {
+      if (adjust == FALSE & length(attr_x) > 1) {
         data_model <- data_model[, -which(substr(colnames(data_model), 1, 2) == "c_")]
       }
       
@@ -827,26 +827,28 @@ conjacp.estimation <- function(conjacp.prepdata.object,
     dimnames(full_vcov) <- list(full_vcov_names, full_vcov_names)
     
     # Calculate covariance matrices
-    all_pairs <- combn(length(models), 2)
-    for (pair in 1:ncol(all_pairs)) {
-      
-      # Set indices
-      i <- all_pairs[1, pair]
-      j <- all_pairs[2, pair]
-      
-      # Position in full matrix
-      coord_no_1 <- sum(rank[0:(i-1)])
-      coord_no_2 <- sum(rank[0:(j-1)])
-      
-      # Calculate covariance
-      cov_temp <- cov.2models(models[[i]], models[[j]])
-      
-      # Plug covariance in full matrix
-      full_vcov[(coord_no_2+1):(coord_no_2+rank[j]),
-                (coord_no_1+1):(coord_no_1+rank[i])] <- t(cov_temp)
-      full_vcov[(coord_no_1+1):(coord_no_1+rank[i]),
-                (coord_no_2+1):(coord_no_2+rank[j])] <- cov_temp
-      
+    if (length(models) > 2) {
+      all_pairs <- combn(length(models), 2)
+      for (pair in 1:ncol(all_pairs)) {
+        
+        # Set indices
+        i <- all_pairs[1, pair]
+        j <- all_pairs[2, pair]
+        
+        # Position in full matrix
+        coord_no_1 <- sum(rank[0:(i-1)])
+        coord_no_2 <- sum(rank[0:(j-1)])
+        
+        # Calculate covariance
+        cov_temp <- cov.2models(models[[i]], models[[j]])
+        
+        # Plug covariance in full matrix
+        full_vcov[(coord_no_2+1):(coord_no_2+rank[j]),
+                  (coord_no_1+1):(coord_no_1+rank[i])] <- t(cov_temp)
+        full_vcov[(coord_no_1+1):(coord_no_1+rank[i]),
+                  (coord_no_2+1):(coord_no_2+rank[j])] <- cov_temp
+        
+      }
     }
     
     # Out
@@ -1137,11 +1139,16 @@ conjacp.estimation <- function(conjacp.prepdata.object,
     # Variance-covariance matrix
     vcov_all           <- t(scalars) %*% full_vcov %*% scalars
     vcov               <- vcov_all[c(indices_acp, indices_cacp1), c(indices_acp, indices_cacp1)]
-    dimnames(vcov)     <- list(c(names_acp[indices_acp], str_extract(names_acp[indices_cacp1], ".+?(?=\\.\\.)")),
-                               c(names_acp[indices_acp], str_extract(names_acp[indices_cacp1], ".+?(?=\\.\\.)")))
     vcov_alt           <- vcov_all[c(indices_acp, indices_cacp2), c(indices_acp, indices_cacp2)]
-    dimnames(vcov_alt) <- list(c(names_acp[indices_acp], str_extract(names_acp[indices_cacp2], ".+?(?=\\.\\.)")),
-                               c(names_acp[indices_acp], str_extract(names_acp[indices_cacp2], ".+?(?=\\.\\.)")))
+    if (!is.null(dim(vcov))) {
+      dimnames(vcov)     <- list(c(names_acp[indices_acp], str_extract(names_acp[indices_cacp1], ".+?(?=\\.\\.)")),
+                                 c(names_acp[indices_acp], str_extract(names_acp[indices_cacp1], ".+?(?=\\.\\.)")))
+      dimnames(vcov_alt) <- list(c(names_acp[indices_acp], str_extract(names_acp[indices_cacp2], ".+?(?=\\.\\.)")),
+                                 c(names_acp[indices_acp], str_extract(names_acp[indices_cacp2], ".+?(?=\\.\\.)")))
+    } else {
+      names(vcov) <- c(names_acp[indices_acp], str_extract(names_acp[indices_cacp1], ".+?(?=\\.\\.)"))
+      names(vcov_alt) <- c(names_acp[indices_acp], str_extract(names_acp[indices_cacp2], ".+?(?=\\.\\.)"))
+    }
     
     # Indices for subsets of estimates - out
     if (length(attr_unrestricted) > 0) {
@@ -1192,11 +1199,16 @@ conjacp.estimation <- function(conjacp.prepdata.object,
     # Variance-covariance matrix
     vcov_all           <- full_vcov
     vcov               <- vcov_all[c(indices_acp, indices_cacp1), c(indices_acp, indices_cacp1)]
-    dimnames(vcov)     <- list(c(names_p[indices_acp], str_extract(names_p[indices_cacp1], ".+?(?=\\.\\.)")),
-                               c(names_p[indices_acp], str_extract(names_p[indices_cacp1], ".+?(?=\\.\\.)")))
     vcov_alt           <- vcov_all[c(indices_acp, indices_cacp2), c(indices_acp, indices_cacp2)]
-    dimnames(vcov_alt) <- list(c(names_p[indices_acp], str_extract(names_p[indices_cacp2], ".+?(?=\\.\\.)")),
-                               c(names_p[indices_acp], str_extract(names_p[indices_cacp2], ".+?(?=\\.\\.)")))
+    if (!is.null(dim(vcov))) {
+      dimnames(vcov)     <- list(c(names_p[indices_acp], str_extract(names_p[indices_cacp1], ".+?(?=\\.\\.)")),
+                                 c(names_p[indices_acp], str_extract(names_p[indices_cacp1], ".+?(?=\\.\\.)")))
+      dimnames(vcov_alt) <- list(c(names_p[indices_acp], str_extract(names_p[indices_cacp2], ".+?(?=\\.\\.)")),
+                                 c(names_p[indices_acp], str_extract(names_p[indices_cacp2], ".+?(?=\\.\\.)")))
+    } else {
+      names(vcov) <- c(names_p[indices_acp], str_extract(names_p[indices_cacp1], ".+?(?=\\.\\.)"))
+      names(vcov_alt) <- c(names_p[indices_acp], str_extract(names_p[indices_cacp2], ".+?(?=\\.\\.)"))
+    }
     
     # Indices for subsets of estimates - out
     if (length(attr_unrestricted) > 0) {
