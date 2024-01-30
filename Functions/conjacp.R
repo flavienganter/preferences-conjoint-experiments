@@ -145,7 +145,6 @@ conjacp.prepdata <- function(formula,
   
   # Task variable (recode if it does not uniquely identify tasks)
   if (any(table(data[, tasks]) > 2)) {
-          > 2)) {
     if (is.null(id)) {
       stop("The tasks variable does not uniquely identify pairs of profiles that were simulatenously presented to respondents in the data. Specify the id argument, or respecify the tasks variable.")
     } else {
